@@ -1,0 +1,71 @@
+using Sabio.Web.Models;
+using Sabio.Web.Models.ViewModels;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using System.Web.Mvc;
+
+namespace Sabio.Web.Controllers
+{
+    [RoutePrefix("Accounts")]
+    public class AccountsController : BaseController
+    {
+        // GET: Accounts
+        public ActionResult Index()
+        {
+            return View();
+        }
+        //Get: Accounts CREATE, EDIT and DELETE
+        [Route("Create")]
+        [Route("Edit")]
+        [Route ("{id:int}/Edit")]
+        [Authorize(Roles = "Admin")]
+        public ActionResult Create(int id = 0)
+        {
+            AccountsIdViewModel model = new AccountsIdViewModel();
+            model.Id = id;
+            model.AccountId = id;
+            DecorateViewModel(model);
+            return View(model);
+        }
+       
+        //GET by Id: Accounts by Id READ ONLY for Guard View
+        [Route("AccountBase")]
+        [Route("{id:int}")]
+        public ActionResult AccountBase(int id = 0)
+        {
+            AccountsIdViewModel model = new AccountsIdViewModel();
+            model.Id = id;
+            model.AccountId = id;
+            DecorateViewModel(model);
+            return View(model);
+        }
+
+        // Get By AccountId for Account CheckLists : Accounts/{id#}/CheckLists/{id#}
+        [Route("{accountId:int}/CheckLists")]
+        [Route("{accountId:int}/CheckLists/{id:int}")]
+        [Authorize(Roles = "Admin, Supervisor")]
+        public ActionResult CheckLists(int accountId, int? id = null)
+        {
+            AccountCheckListViewModel model = new AccountCheckListViewModel();
+            DecorateViewModel(model);
+            model.Id = accountId;
+            model.CheckListId = id ?? 0 ;
+            model.AccountId = accountId; // So BaseViewModel has accountId.
+            return View(model);
+        }
+
+
+        // Get By AccountId for AccountVisitorLogs : Accounts/{id#}/AccountVisitorLogs
+        [Route("{id:int}/AccountVisitorLogs")]
+        public ActionResult AccountVisitorLogs(int id)
+        {
+            AccountsIdViewModel model = new AccountsIdViewModel();
+            model.Id = id;
+            DecorateViewModel(model);
+            return View(model);
+        }
+
+    }
+}
