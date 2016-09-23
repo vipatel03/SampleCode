@@ -1,0 +1,182 @@
+using Sabio.Data;
+using Sabio.Web.Domain;
+using Sabio.Web.Models.Requests;
+using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Data.SqlClient;
+using System.Linq;
+using System.Web;
+
+namespace Sabio.Web.Services
+{
+    public class AccountVisitorLogService : BaseService, IAccountVisitorLogService
+    {
+        public  int Insert(AccountVisitorLogAddRequest model)
+        {
+            int id = 0;
+            DataProvider.ExecuteNonQuery(GetConnection, "dbo.AccountVisitorLogs_Insert"
+           , inputParamMapper: delegate (SqlParameterCollection paramCollection)
+           {
+               SetCommonParameters(model, paramCollection);
+
+               var idParam = new SqlParameter("@Id", System.Data.SqlDbType.Int);
+               idParam.Direction = System.Data.ParameterDirection.Output;
+               paramCollection.Add(idParam);
+           },
+            returnParameters: delegate (SqlParameterCollection param)
+            {
+                int.TryParse(param["@Id"].Value.ToString(), out id);
+            }
+            );
+            return id;
+        }
+
+        public  void Update(AccountVisitorLogAddRequest model, int? id)
+        {
+            DataProvider.ExecuteNonQuery(GetConnection, "dbo.AccountVisitorLogs_Update"
+                , inputParamMapper: delegate (SqlParameterCollection paramCollection)
+                {
+                    SetCommonParameters(model, paramCollection);
+                    paramCollection.AddWithValue("@Id", id);
+                }
+                );
+        }
+
+        public  List<AccountVisitorLog> SelectAll(int accountId)
+        {
+            List<AccountVisitorLog> list = null;
+            DataProvider.ExecuteCmd(GetConnection, "dbo.AccountVisitorLogs_SelectAll"
+               , inputParamMapper: delegate (SqlParameterCollection paramCollection)
+               {
+                   int? tenantId = UserService.GetCurrentTenantId();
+                   string userId = UserService.GetCurrentUserId();
+                   paramCollection.AddWithValue("@TenantId", tenantId);
+                   paramCollection.AddWithValue("@UserId", userId);
+                   paramCollection.AddWithValue("@AccountId", accountId);
+
+               }, map: delegate (IDataReader reader, short set)
+               {
+                   AccountVisitorLog p = MapVisitorLogs(reader);
+                   if (list == null)
+                   {
+                       list = new List<AccountVisitorLog>();
+                   }
+                   list.Add(p);
+               }
+               );
+            return list;
+        }
+
+        public  AccountVisitorLog SelectById(int id)
+        {
+            AccountVisitorLog result = new AccountVisitorLog();
+
+            DataProvider.ExecuteCmd(GetConnection, "dbo.AccountVisitorLogs_SelectById"
+                , inputParamMapper: delegate (SqlParameterCollection paramCollection)
+                {
+                    int? tenantId = UserService.GetCurrentTenantId();
+                    string userId = UserService.GetCurrentUserId();
+                    paramCollection.AddWithValue("@Id", id);
+                    paramCollection.AddWithValue("@TenantId", tenantId);
+                    paramCollection.AddWithValue("@UserId", userId);
+                },
+
+                map: delegate (IDataReader reader, short set)
+                {
+                    result = MapVisitorLogs(reader);
+                }
+                );
+            return result;
+        }
+
+        public  List<AccountVisitorLog> SelectByAccountContactId(int accountContactId)
+        {
+            List<AccountVisitorLog> results = null;
+
+            DataProvider.ExecuteCmd(GetConnection, "dbo.AccountVisitorLogs_SelectByAccountContactId"
+                , inputParamMapper: delegate (SqlParameterCollection pc)
+                {
+                    int? tenantId = UserService.GetCurrentTenantId();
+                    string userId = UserService.GetCurrentUserId();
+                    pc.AddWithValue("@AccountContactId", accountContactId);
+                    pc.AddWithValue("@TenantId", tenantId);
+                    pc.AddWithValue("@UserId", userId);
+                },
+                map: delegate (IDataReader reader, short set)
+                {
+                    AccountVisitorLog p = MapVisitorLogs(reader);
+
+                    if (results == null)
+                    {
+                        results = new List<AccountVisitorLog>();
+                    }
+                    results.Add(p);
+                }
+                );
+            return results;
+        }
+   
+
+        public  void Delete(int id)
+        {
+            DataProvider.ExecuteNonQuery(GetConnection, "dbo.AccountVisitorLogs_Delete"
+                , inputParamMapper: delegate (SqlParameterCollection paramCollection)
+                {
+                    int? tenantId = UserService.GetCurrentTenantId();
+                    string userId = UserService.GetCurrentUserId();
+                    paramCollection.AddWithValue("@TenantId", tenantId);
+                    paramCollection.AddWithValue("@UserId", userId);
+                    paramCollection.AddWithValue("@Id", id);
+                }
+                );
+        }
+
+
+
+        #region
+        private  void SetCommonParameters(AccountVisitorLogAddRequest model, SqlParameterCollection paramCollection)
+        {
+            int? tenantId = UserService.GetCurrentTenantId();
+            string userId = UserService.GetCurrentUserId();
+            paramCollection.AddWithValue("@TenantId", tenantId);
+            paramCollection.AddWithValue("@UserId", userId);
+            paramCollection.AddWithValue("@AccountContactId", model.AccountContactId);
+            paramCollection.AddWithValue("@ArrivalDateTime", model.ArrivalDateTime);
+            paramCollection.AddWithValue("@DepartureDateTime", model.DepartureDateTime);
+            paramCollection.AddWithValue("@Purpose", model.Purpose);
+            paramCollection.AddWithValue("@VehicleLicense", model.VehicleLicense);
+            paramCollection.AddWithValue("@VehicleMake", model.VehicleMake);
+            paramCollection.AddWithValue("@VehicleModel", model.VehicleModel);
+            paramCollection.AddWithValue("@VehicleColor", model.VehicleColor);
+            paramCollection.AddWithValue("@FirstName", model.FirstName);
+            paramCollection.AddWithValue("@LastName", model.LastName);
+            paramCollection.AddWithValue("@AccountId", model.AccountId);
+        }
+
+        public  AccountVisitorLog MapVisitorLogs(IDataReader reader)
+        {
+            AccountVisitorLog result = new AccountVisitorLog();
+            int ordinal = 0;
+            result.Id = reader.GetSafeInt32(ordinal++);
+            result.AccountContactId = reader.GetSafeInt32Nullable(ordinal++);
+            result.ArrivalDateTime = reader.GetSafeDateTime(ordinal++);
+            result.DepartureDateTime = reader.GetSafeDateTimeNullable(ordinal++);
+            result.Purpose = reader.GetSafeString(ordinal++);
+            result.VehicleLicense = reader.GetSafeString(ordinal++);
+            result.VehicleMake = reader.GetSafeString(ordinal++);
+            result.VehicleModel = reader.GetSafeString(ordinal++);
+            result.VehicleColor = reader.GetSafeString(ordinal++);
+            result.FirstName = reader.GetSafeString(ordinal++);
+            result.LastName = reader.GetSafeString(ordinal++);
+            result.AccountId = reader.GetSafeInt32(ordinal++);
+
+            return result;
+        }
+
+        #endregion
+
+
+
+    }
+}
