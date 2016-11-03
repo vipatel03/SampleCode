@@ -1,0 +1,557 @@
+
+@{
+    ViewBag.Title = "AccountVisitorLogs";
+    Layout = "~/Views/Shared/_InspiniaLayout.cshtml";
+}
+
+
+<div class="animated fadeInDown" ng-controller="visitorLogsController as visLogVm" ng-cloak>
+    <div ui-view="" class="ng-scope">
+        <div class="row wrapper border-bottom white-bg page-heading ng-scope">
+            <div class="col-lg-10">
+                <h2>{{visLogVm.account.accountName? visLogVm.account.accountName : null}}{{visLogVm.account.accountName? "'s Visitor Log" : "Visitor Logs"}} </h2>
+                <ol class="breadcrumb">
+                    <li>
+                        <a href="index.html">Home</a>
+                    </li>
+                    <li>
+                        <a>Account</a>
+                    </li>
+                    <li class="active">
+                        <strong>Visitor Logs</strong>
+                    </li>
+                </ol>
+            </div>
+            <div class="col-lg-2">
+
+            </div>
+        </div>
+        <div class="wrapper wrapper-content animated fadeInRight ecommerce ng-scope">
+            <div class="ibox-title">
+                <h5>Visitor Log Form</h5>
+            </div>
+            <div class="ibox-content m-b-sm border-bottom">
+                <form id="visLogForm" name="visLogVm.visLogForm" class="m-b-lg" ng-submit="visLogVm.editVisLog()" novalidate>
+                    <div class="form-group">
+                        <div class="input-group m-t-xs">
+                            <button tooltip-placement="right" uib-tooltip="Click to add Account Contact" type="button" class="btn btn-primary btn-xs m-b-sm" ng-click="visLogVm.acButton()" ng-show="visLogVm.setButton == false">Account Contact</button>
+                        </div>
+                        <div class="input-group" ng-show="visLogVm.setButton == true">
+                            <select chosen search-contains="true" max-shown-results="5" id="accountContacts" style="width: 220px;" tabindex="-1" ng-model="visLogVm.acItem" ng-change="visLogVm.copyAcItem(visLogVm.acItem)" ng-options="aclist.firstName + ' ' + aclist.lastName for aclist in visLogVm.accountContacts">
+                                <option value="?" selected="selected"></option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-2">
+                            <div class="form-group">
+                                <label class="control-label" for="first_name">First Name</label>
+                                <input ng-model="visLogVm.selectedVisLog.firstName"
+                                       ng-class="{'error': visLogVm.showVisLogErrors && !visLogVm.visLogForm.firstName.$valid}"
+                                       ng-disabled="visLogVm.selectedVisLog.accountContactId != null"
+                                       type="text" id="first_name" name="firstName" placeholder="First Name" class="form-control" ng-maxlength="20" required>
+                                <div role="alert" class="help-inline error">
+                                    <span class="error" ng-show="visLogVm.showVisLogErrors && visLogVm.visLogForm.firstName.$error.required">First Name is required</span>
+                                    <span class="error" ng-show="visLogVm.showVisLogErrors && visLogVm.visLogForm.firstName.$error.maxlength">Too Long! First Name must be 20 characters or less</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="form-group">
+                                <label class="control-label" for="last_name">Last Name</label>
+                                <input data-ng-model="visLogVm.selectedVisLog.lastName"
+                                       ng-class="{'error': visLogVm.showVisLogErrors && !visLogVm.visLogForm.lastName.$valid}"
+                                       ng-disabled="visLogVm.selectedVisLog.accountContactId != null"
+                                       type="text" id="last_name" name="lastName" placeholder="Last Name" class="form-control" ng-maxlength="20" required>
+                                <div role="alert" class="help-inline error">
+                                    <span class="error" ng-show="visLogVm.showVisLogErrors && visLogVm.visLogForm.lastName.$error.required">Last Name is required</span>
+                                    <span class="error" ng-show="visLogVm.showVisLogErrors && visLogVm.visLogForm.lastName.$error.maxlength">Too Long! Last Name must be 20 characters or less</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label class="control-label" for="arrival_time">Arrival Time</label>
+                                <div class="input-group date">
+                                    <span class="input-group-addon"><a><i tooltip-placement="left" uib-tooltip="Click to add current datetime" ng-click="visLogVm.timeStampClick()" class="fa fa-calendar"></i></a></span>
+                                    <input uib-datepicker-popup data-ng-model="visLogVm.selectedVisLog.arrivalDateTime" id="arrival_time" name="theDate" type="datetime-local" class="form-control">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3" ng-show="visLogVm.selectedVisLog.id">
+                            <div class="form-group">
+                                <label class="control-label" for="departure_time">Departure Time</label>
+                                <div class="input-group date">
+                                    <span class="input-group-addon"><a><i tooltip-placement="left" uib-tooltip="Click to add current datetime" ng-click="visLogVm.timeStampClickDeparture()" class="fa fa-calendar"></i></a></span><input data-ng-model="visLogVm.selectedVisLog.departureDateTime" id="departure_time" type="datetime-local" class="form-control">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-2">
+                            <div class="form-group">
+                                <label class="control-label" for="license">Vehicle License</label>
+                                <input data-ng-model="visLogVm.selectedVisLog.vehicleLicense" type="text" id="license" name="license" value="" placeholder="Vehicle License" class="form-control">
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="form-group">
+                                <label class="control-label" for="make">Vehicle Make</label>
+                                <input data-ng-model="visLogVm.selectedVisLog.vehicleMake" ng-disabled="visLogVm.selectedVisLog.accountContactId != null" type="text" id="make" name="make" value="" placeholder="Vehicle Make" class="form-control">
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label class="control-label" for="model">Vehicle Model</label>
+                                <input data-ng-model="visLogVm.selectedVisLog.vehicleModel"
+                                ng-disabled="visLogVm.selectedVisLog.accountContactId != null" type="text" id="model" 
+                                name="model" value="" placeholder="Vehicle Model" class="form-control">
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="form-group">
+                                <label class="control-label" for="color">Vehicle Color</label>
+                                <input data-ng-model="visLogVm.selectedVisLog.vehicleColor" type="text" id="color" name="color" 
+                                value="" placeholder="Vehicle Color" class="form-control">
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label class="control-label" for="purpose">Purpose of visit</label>
+                                <textarea style="resize:none" data-ng-model="visLogVm.selectedVisLog.purpose" type="text" 
+                                id="purpose" name="purpose" value="" placeholder="Purpose of visit" class="form-control" 
+                                ng-class="{'error': visLogVm.showVisLogErrors && !visLogVm.visLogForm.purpose.$valid}"
+                                ng-maxlength="500"></textarea>
+                                <div role="alert" class="help-inline error">
+                                    <span class="error" ng-show="visLogVm.visLogForm.purpose.$error.maxlength">Too Long! 
+                                    Purpose of visit must be 500 characters or less</span>
+                                </div>
+                                <div style="float:right" class="m-t-lg">
+                                    <button id="cmdCancel" class="btn btn-white btn-w-m" type="button" 
+                                    data-ng-click="visLogVm.cancel()">{{visLogVm.selectedVisLog.id? "Clear" : "Cancel"  }}</button>
+                                    <button id="cmdSave" class="btn btn-primary btn-w-m" 
+                                    type="submit">{{visLogVm.selectedVisLog.id? "Check Visitor Out" : "Check Visitor In" }}</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <div class="row animated fadeInRight">
+                <div class="col-lg-12">
+                    <div class="ibox">
+                        <div class="ibox-content">
+                            <div class="row">
+                                <div class="form-inline col-lg-6">
+                                    <label>Search Visitor Log: </label>
+                                    <input type="search" class="form-control input-sm m-b-xs" id="filter"
+                                    placeholder="Search in visitor log" name="searchText" ng-model="searchText.$">
+                                </div>
+                                <div class="form-inline col-lg-6">
+                                    <label>Search in Date Range: </label>
+                                    <input type="datetime-local" class="form-control input-sm m-b-xs" id="filter"
+                                    placeholder="Search by arrival date" name="startDate" ng-model="visLogVm.startDate">
+                                    <label>to</label>
+                                    <input type="datetime-local" class="form-control input-sm m-b-xs" id="filter" 
+                                    placeholder="Search in departure date" name="endDate" ng-model="visLogVm.endDate">
+                                </div>
+                            </div>
+                            <table class="table footable table-striped table-hover" data-page-size="10">
+                                <thead>
+                                    <tr>
+                                        <th>Full Name<span></span></th>
+                                        <th>Arrival Date<span></span></th>
+                                        <th>Departure Date<span></span></th>
+                                        <th>Vehicle License<span></span></th>
+                                        <th>Vehicle Type<span></span></th>
+                                        <th>Purpose Of Visit<span></span></th>
+                                        <th>Status<span></span></th>
+                                        <th>Action<span></span></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr data-ng-repeat="vislist in visLogVm.visitorLogs | filter: searchText |
+                                    dateRange: visLogVm.startDate: visLogVm.endDate: true  | orderBy: '-arrivalDateTime'">
+                                        <td>
+                                            {{vislist.firstName}} {{vislist.lastName}}
+                                        </td>
+                                        <td>
+                                            <i class="fa fa-clock-o"></i> {{vislist.arrivalDateTime | date: 'short'}}
+                                        </td>
+                                        <td>
+                                            <p ng-hide="vislist.departureDateTime == null">
+                                            <i class="fa fa-clock-o"></i> {{vislist.departureDateTime | date: 'short'}}</p>
+                                        </td>
+                                        <td>
+                                            {{vislist.vehicleLicense}}
+                                        </td>
+                                        <td>
+                                            {{vislist.vehicleMake}} {{vislist.vehicleModel}} {{vislist.vehicleColor}}
+                                        </td>
+                                        <td class="">
+                                            {{vislist.purpose}}
+                                        </td>
+                                        <td>
+                                            <span class="label label-primary" ng-hide="vislist.departureDateTime == null">
+                                            CHECKED OUT</span>
+                                            <span class="label label-danger" ng-hide="vislist.departureDateTime != null">IN HOUSE</span>
+                                        </td>
+                                        <td>
+                                            <div class="btn-group">
+                                                <button class="btn btn-white btn-xs" data-ng-click="visLogVm.edit(vislist)">
+                                                <i class="fa fa-pencil"></i>&nbsp Edit</button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                                <tfoot class="hide-if-no-paging">
+                                    <tr>
+                                        <td colspan="7">
+                                            <ul class="pagination pull-right"></ul>
+                                        </td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@section Styles{
+    <link href="~/Themes/Inspinia_MVC5/Content/plugins/sweetalert/sweetalert.css" rel="stylesheet" />
+    <link href="~/Themes/Inspinia_MVC5/Content/plugins/toastr/toastr.min.css" rel="stylesheet" />
+    <link href="~/Themes/Inspinia_MVC5/Content/plugins/footable/footable.core.css" rel="stylesheet" />
+    <link href="~/Content/Plugins/720kbDatePicker/angular-datepicker.min.css" rel="stylesheet" />
+    <link href="~/Themes/Inspinia_MVC5/Content/plugins/chosen/chosen.css" rel="stylesheet" />
+    <link href="~/Themes/Inspinia_MVC5/Content/plugins/iCheck/custom.css" rel="stylesheet" />
+    <style type="text/css">
+        [ng\:cloak], [ng-cloak], [data-ng-cloak], [x-ng-cloak], .ng-cloak, .x-ng-cloak {
+            display: none !important;
+        }
+    </style>
+    <style type="text/css">
+        .chosen-container .chosen-drop {
+            max-height: 260px;
+            overflow: auto;
+        }
+    </style>
+}
+@section pageInitScripts{
+    <!--Adds directives as dependecies-->
+    <script>samplecode.moduleOptions.extraModuleDependencies.push("localytics.directives");</script>
+    <!--Dependencies for FOOTABLE-->
+    <script>samplecode.moduleOptions.extraModuleDependencies.push("ui.footable");</script>
+    <!--CHOSEN Need both JQUERY and CHOSEN directive-->
+    <script src="~/Themes/Inspinia_MVC5/Scripts/plugins/chosen/chosen.jquery.js"></script>
+    <script src="~/Scripts/app/directives/chosen.js"></script>
+    <!--MOMENT for time converstion-->
+    <script src="~/Themes/Inspinia_MVC5/Scripts/plugins/fullcalendar/moment.min.js"></script>
+    <script src="~/Scripts/app/directives/icheck.js"></script>
+    <script src="~/Themes/Inspinia_MVC5/Scripts/plugins/iCheck/icheck.min.js"></script>
+}
+@section Scripts {
+    <script src="~/Scripts/samplecode.services.Accounts.js"></script>
+    <!--Sweet Alert-->
+    <script src="~/Themes/Inspinia_MVC5/Scripts/plugins/sweetalert/sweetalert.min.js"></script>
+    <!--Toastr-->
+    <script src="~/Themes/Inspinia_MVC5/Scripts/plugins/toastr/toastr.min.js"></script>
+    <!--Slim Scroll-->
+    <script src="~/Themes/Inspinia_MVC5/Scripts/plugins/slimscroll/jquery.slimscroll.min.js"></script>
+    <!--Footable-->
+    <script src="~/Themes/Inspinia_MVC5/Scripts/plugins/footable/footable.all.min.js"></script>
+    <script src="~/Scripts/plugins/footable/angular-footable.min.js"></script>
+    <script src="~/Scripts/plugins/footable/angular-footable.js"></script>
+    <script type="text/javascript">
+        //Storing Id in a global
+        samplecode.page.accountId = @Model.Id;
+
+        (function () {
+            "use strict";
+
+            angular.module(APPNAME)
+                 .factory('$visitorLogsService', VisitorLogsFactory);
+
+            VisitorLogsFactory.$inject = ['$baseService', '$samplecode'];
+
+            function VisitorLogsFactory($baseService, $samplecode) {
+
+                var aSamplecode = samplecode.services.Accounts;
+
+                var newService = $baseService.merge(true, {}, aSamplecodeServiceObject, $baseService);
+
+                return newService;
+            }
+
+        })();
+
+        //needed for icheck
+        (function(){
+            "use strict";
+            angular.module(APPNAME)
+               .directive('icheck', icheck);
+        })();
+
+        //daterange filter
+        (function(){
+            "use strict";
+           angular.module(APPNAME)
+            .filter("dateRange", function() {
+                return function(items, startDate, endDate) {
+                    var sd = startDate;
+                    var ed = endDate;
+                    var result = [];
+                    if(!items){
+                        return result;
+                    }
+                    for (var i=0; i<items.length; i++){
+                        var ad = new Date(items[i].arrivalDateTime),
+                            dd = new Date(items[i].departureDateTime);
+                        if ((!sd || (ad > sd)) && (!ed ||(dd < ed))){
+                            result.push(items[i]);
+                        }
+                    }            
+                    return result;
+                };
+            });
+        })();
+
+        //adding Visitor Logs controller
+        (function () {
+            "use strict";
+
+            angular.module(APPNAME)
+                .controller('visitorLogsController', VisitorLogsController);
+
+            VisitorLogsController.$inject = ['$scope', '$baseController', "$visitorLogsService", "$samplecode"];
+
+            function VisitorLogsController(
+                  $scope
+                , $baseController
+                , $visitorLogsService
+                , $samplecode) {
+
+                var vm = this;
+                vm.accountContacts = null;
+                vm.account = null;
+                vm.visitorLogs = null;
+                vm.showVisLogErrors = false;
+                vm.visLogForm = null;
+                vm.setButton = false;
+                vm.selectedAcList = null;
+                vm.clickedTimeStamp = null;
+                vm.timeStampClickDeparture = null;
+                vm.safetyCopy = null;
+                vm.acItem = {};
+                vm.selectedVisLog = {};
+
+                //injected service
+                vm.$visitorLogsService = $visitorLogsService;
+                vm.$scope = $scope;
+
+                //functions
+                vm.editVisLog = _editVisLog;
+                vm.cancel = _cancel;
+                vm.edit = _edit;
+                vm.acButton = _acButton;
+                vm.timeStampClick = _timeStampClick;
+                vm.copyAcItem = _copyAcItem;
+                vm.timeStampClickDeparture = _timeStampClickDeparture;
+
+
+                //this line to simulate inheritance
+                $baseController.merge(vm, $baseController);
+
+                //this is a wrapper for our small dependency on $scope
+                vm.notify = vm.$visitorLogsService.getNotifier($scope);
+
+                //this is like the samplecode.startUp function
+                render();
+
+                function render() {
+                    if (samplecode.page.accountId) {
+                        vm.$visitorLogsService.selectAllVisitorLogs(samplecode.page.accountId, _onSelectAllVisitorLogsSuccess, _onSelectAllVisitorLogsError);
+                    }
+                }
+
+                //SelectAllVisitorLogs Success
+                function _onSelectAllVisitorLogsSuccess(data, status, jqXHR) {
+                    vm.notify(function () {
+                        vm.visitorLogs = data.items;
+                        for (var i = 0; i < vm.visitorLogs.length; i++) {
+                            vm.visitorLogs[i].arrivalDateTime = new Date(vm.visitorLogs[i].arrivalDateTime);
+                            if(vm.visitorLogs[i].departureDateTime != null){
+                                vm.visitorLogs[i].departureDateTime = new Date(vm.visitorLogs[i].departureDateTime);
+                            }
+                        }
+                    });
+                    vm.$visitorLogsService.selectAccountContactByAccountId(samplecode.page.accountId, _onSelectAccountContactByAccountIdSuccess, _onSelectAccountContactByAccountIdError);
+                }
+
+                //On SelectAccountContactByAccountId
+                function _onSelectAccountContactByAccountIdSuccess(data, status, jqXHR) {
+                    vm.notify(function () {
+                        vm.account = data.item;
+                        vm.accountContacts = data.item.accountContacts;
+                    });
+                }
+
+                //SelectAccountContactByAccountId Error
+                function _onSelectAccountContactByAccountIdError(jqXHR, error) {
+                    vm.$alertService.warning("Error Occured");
+                    console.log(error);
+                }
+
+                //SELECT All Visitor Logs ERROR
+                function _onSelectAllVisitorLogsError(jqXHR, error) {
+                    vm.$alertService.warning("Error Occured");
+                }
+
+                function _editVisLog(){
+                    vm.selectedVisLog;
+                    vm.showVisLogErrors = true;
+                    if(vm.visLogForm.$valid){
+                        vm.selectedVisLog.arrivalDateTime = new Date(vm.selectedVisLog.arrivalDateTime);
+                        if(vm.selectedVisLog.departureDateTime != null){
+                            vm.selectedVisLog.departureDateTime = new Date(vm.selectedVisLog.departureDateTime);
+                        }
+                        if(vm.selectedVisLog.arrivalDateTime <= vm.selectedVisLog.departureDateTime || vm.selectedVisLog.departureDateTime == null){
+                            vm.selectedVisLog["accountId"] = samplecode.page.accountId;
+                            var data = JSON.stringify(vm.selectedVisLog);
+                            if(vm.selectedVisLog.id){
+                                vm.$visitorLogsService.accountVisitorLogsUpdate(vm.selectedVisLog.id, data, _onVisLogUpdateSuccess, _onVisLogUpdateError);
+                            }
+                            else{
+                                vm.$visitorLogsService.accountVisitorLogsInsert(data, _onVisLogInsertSuccess, _onVisLogInsertError);
+                            }
+                        }
+                        else{
+                            vm.$alertService.error('Please check departure time');
+                        }
+                    }
+                    else{
+                        vm.$alertService.error('Please complete the form');
+                    }
+
+                }
+                function _onVisLogInsertSuccess(data, status, jqXNR) {
+                    vm.notify(function () {
+                        vm.selectedVisLog.id = data.item;
+                        vm.selectedVisLog.arrivalDateTime = new Date(vm.selectedVisLog.arrivalDateTime);
+                        if(vm.selectedVisLog.departureDateTime != null){
+                            vm.selectedVisLog.departureDateTime = new Date(vm.selectedVisLog.departureDateTime);
+                        }
+                        vm.visitorLogs.push(vm.selectedVisLog);
+                        vm.showVisLogErrors = false;
+                        vm.selectedVisLog = {};
+                        vm.acItem = {};
+                        vm.setButton = false;
+                        vm.visLogForm.$setPristine();
+                        vm.visLogForm.$setUntouched();
+                    });
+                    swal({
+                        title: "SUCCESS!",
+                        text: "Visitor is CHECKED IN sucessfully!",
+                        type: "success",
+                        timer: 1000,
+                        showConfirmButton: false
+                    });
+                }
+
+                function _onVisLogInsertError(jqXHR, status, errorMessage) {
+                    vm.$alertService.error('Unable to check visitor in.');
+                }
+
+                function _onVisLogUpdateSuccess(data, status, jqXHR) {
+                    vm.notify(function () {
+                        vm.selectedVisLog.arrivalDateTime = new Date(vm.selectedVisLog.arrivalDateTime);
+                        if(vm.selectedVisLog.departureDateTime != null){
+                            vm.selectedVisLog.departureDateTime = new Date(vm.selectedVisLog.departureDateTime);
+                        }
+                        var index;
+                        for (var i = 0; i <  vm.visitorLogs.length; i++) {
+                            if (vm.visitorLogs[i].id == vm.selectedVisLog.id) {
+                                index = i;
+                                break;
+                            }
+                        }
+                        vm.visitorLogs.splice(index, 1, vm.selectedVisLog);
+                        vm.showVisLogErrors = false;
+                        vm.selectedVisLog = {};
+                        vm.acItem = {};
+                        vm.setButton = false;
+
+                    });
+                    swal({
+                        title: "SUCCESS!",
+                        text: "Visitor is CHECKED OUT successfully!",
+                        type: "success",
+                        timer: 1000,
+                        showConfirmButton: false
+                    });
+                }
+
+                function _onVisLogUpdateError(jqXHR, status, errorMessage) {
+                    vm.notify(function () {
+                        vm.$alertService.error('Unable to checkout visitor.');
+                    });
+                }
+
+                function _cancel(){
+                    if (vm.safetyCopy != null) {
+                        for (var i = 0; i < vm.visitorLogs.length; i++) {
+                            if (vm.visitorLogs[i].id == vm.safetyCopy.id) {
+                                vm.visitorLogs[i] = angular.copy(vm.safetyCopy);
+                                break;
+                            }
+                        }
+                    }
+                    vm.showVisLogErrors = false;
+                    vm.selectedVisLog = {};
+                    vm.acItem = {};
+                    vm.setButton = false;
+                }
+
+                function _edit(vislist){
+                    vm.selectedVisLog = vislist;
+                    vm.safetyCopy = angular.copy(vm.selectedVisLog);
+                    vm.acItem = {};
+                    vm.setButton = false;
+                }
+
+                function _acButton(){
+                    vm.showVisLogErrors = false;
+                    vm.selectedVisLog = {};
+                    vm.acItem = {};
+                    vm.setButton = true;
+                }
+
+                function _timeStampClick(){
+                    if(vm.selectedVisLog == undefined){
+                        vm.$alertService.error('Please insert a name');
+                    }
+                    else{
+                        vm.dateNow = moment().toDate();
+                        vm.selectedVisLog.arrivalDateTime = vm.dateNow;
+                    }
+                }
+                function _timeStampClickDeparture(){
+                    vm.dateNow = moment().toDate();
+                    vm.selectedVisLog.departureDateTime = vm.dateNow;
+                }
+
+                function _copyAcItem(item){
+                    vm.selectedVisLog = {};
+                    vm.selectedVisLog.firstName = item.firstName;
+                    vm.selectedVisLog.lastName = item.lastName;
+                    vm.selectedVisLog.vehicleModel = item.vehicleModel;
+                    vm.selectedVisLog.vehicleMake = item.vehicleMake;
+                    vm.selectedVisLog.accountContactId = item.id;
+                }
+
+            }
+        })();
+    </script>
+}
